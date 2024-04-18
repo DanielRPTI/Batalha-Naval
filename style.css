@@ -1,0 +1,88 @@
+/* Inicio as estilizações e dimenssões da nossa table para jogarmos
+  utilizei o grid por ser mais facíl de desenhar as colunas e linhas da table
+*/
+#gametable-container{
+  width: 500px;
+
+  display: flex;
+  justify-content: space-between;
+}
+
+.game-table{
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.block{
+  width: 20px;
+  height: 20px;
+  border: solid black 1px;
+  box-sizing: border-box;
+}
+
+.block:hover{
+  color: beige 50%;
+}
+
+.option-container {
+  width: 500px;
+  height: 60px;
+  margin: 30px 0;
+
+  display: flex;
+  align-items: center;
+
+  background-color: lightblue;
+  border-radius: 8px;
+  border: solid black;
+}
+
+.destroyer{
+  background-color: brown;
+}
+
+.destroyer-preview{
+  width: 20px;
+  height: 10px;
+  margin: 3px;
+}
+
+.submarine{
+  background-color: orange;
+}
+
+.submarine-preview{
+  width: 30px;
+  height: 10px;
+  margin: 3px;
+}
+
+.cruiser{
+  background-color: blue;
+}
+.cruiser-preview{
+  width: 30px;
+  height: 10px;
+  margin: 3px;
+}
+
+.battleship{
+  background-color: blueviolet;
+}
+
+.battleship-preview{
+  width: 40px;
+  height: 10px;
+  margin: 3px;
+}
+
+.carrier{
+  background-color: chartreuse;
+}
+.carrier-preview{
+  width: 60px;
+  height: 10px;
+  margin: 3px;
+}

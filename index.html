@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Naval Battle</title>
+</head>
+<body>
+  <div id="info-game">
+    <p>Turn: <span id="turn-display"></span></p>
+    <p>Info: <span id="info"></span></p>
+  </div>
+    
+  <div id="gametable-container"></div>
+
+  <div class="option-container">
+    <div class="destroyer-preview destroyer" draggable="true"></div>
+    <div class="submarine-preview submarine" draggable="true"></div>
+    <div class="cruiser-preview cruiser" draggable="true"></div>
+    <div class="battleship-preview battleship" draggable="true"></div>
+    <div class="carrier-preview carrier" draggable="true"></div>
+  </div>
+
+  <button id="turn-btn" onclick="turnShip()">Turn Ships</button>
+  <button id="start-btn">Start Game</button>
+  <script src="index.js"></script>
+</body>
+</html>
