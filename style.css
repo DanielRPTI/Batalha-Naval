@@ -86,3 +86,23 @@
   height: 10px;
   margin: 3px;
 }
+
+.hover {
+  background-color: grey;
+}
+
+#bot .destroyer,
+#bot .submarine,
+#bot .battleship,
+#bot .carrier,
+#bot .cruiser{
+  background-color: yellow;
+}
+
+.hit {
+  background-color: red !important;
+}
+
+.fail-try {
+  background-color: grey !important;
+}
