@@ -1,9 +1,29 @@
 /* Inicio as estilizações e dimenssões da nossa table para jogarmos
   utilizei o grid por ser mais facíl de desenhar as colunas e linhas da table
 */
+body{
+  width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+#info-game{
+  font-weight: 700;
+  font-size: 1rem
+}
+
+.select-title{
+  font-weight:700 ;
+  margin-top: 20px;
+  font-size: 16px;
+}
+
 #gametable-container{
   width: 500px;
-
   display: flex;
   justify-content: space-between;
 }
@@ -13,6 +33,15 @@
   height: 200px;
   display: flex;
   flex-wrap: wrap;
+}
+.title-tables{
+  width: 500px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.title-tables > * {
+  text-align: center;
 }
 
 .block{
@@ -29,7 +58,7 @@
 .option-container {
   width: 500px;
   height: 60px;
-  margin: 30px 0;
+  margin: 10px 0 20px;
 
   display: flex;
   align-items: center;
@@ -91,13 +120,7 @@
   background-color: grey;
 }
 
-#bot .destroyer,
-#bot .submarine,
-#bot .battleship,
-#bot .carrier,
-#bot .cruiser{
-  background-color: yellow;
-}
+
 
 .hit {
   background-color: red !important;
@@ -106,3 +129,4 @@
 .fail-try {
   background-color: grey !important;
 }
+

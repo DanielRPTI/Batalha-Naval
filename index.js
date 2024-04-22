@@ -1,3 +1,4 @@
+//DOM -> ELEMENTOS DA NOSSA PAGINA 
 const gameTable = document.getElementById('gametable-container')
 const optionContainer = document.querySelector('.option-container');
 const turnBtn = document.getElementById('turn-btn');
@@ -6,12 +7,15 @@ const infoDisplay = document.getElementById('info');
 const turnDisplay = document.getElementById('turn-display')
 
 
-/* - Função que vira os barcos.
-- Variavel angle iniciada para fazermos a função de retornar para o angulo padrão
-caso tenha sido modificiado */
+/* - TurnShip() Função que vira os barcos.
+Variaveis:  
+- angle -> variavel recebendo nosso angulo padrão , para ser alterado caso o botão seja clicado 
+- ships -> dentro da variavel ships , estou recebendo todas as divs como um array array , para podermos
+iterar pelo nosso forEach.
+*/
 let angle = 0;
 function turnShip(){
-  //utilizei Array.from para colocar todos os filhos da div em um array
+  //utilizei Array.from para colocar todos os filhos da div OptionContainer em um array
   const ships = Array.from(optionContainer.children)
   if(angle === 0){
     angle = 90;
@@ -19,19 +23,22 @@ function turnShip(){
     angle = 0;
   }
     ships.forEach(ship => {
+      //atribui para cada elemento no nosso container de opções a função rotate do css 
       ship.style.transform = `rotate(${angle}deg)`
     });
   }
   
-//Criando nossas tabelas
-//De largura 10x10 por bloco da nossa tabela 
+//Criando nossas grids, usando a logica de criar divs  de blocks separadamente 
+/*De largura 10x10, criei uma variavel global width pois irei utilizar ela diversas vezes para calculos , além de deixar o codigo mais 
+legivel
+
+*/
 const width = 10;
 function createTable(color, id){
   const gameTableContainer =  document.createElement('div');
   gameTableContainer.classList.add('game-table');
   gameTableContainer.style.backgroundColor = color;
   gameTableContainer.id = id;
-
   for (let i = 0; i < width * width; i++){
     const block = document.createElement('div');
     block.classList.add('block')
@@ -40,30 +47,38 @@ function createTable(color, id){
   }
   gameTable.append(gameTableContainer);
 }
-createTable('pink', 'player');
+createTable('lightblue', 'player');
 createTable('yellow', 'bot');
 
 
-//Criação de um um objeto com todas as informações dos barcos , tendo seu nome e seu comprimento
-class Ship {
-  constructor(name, length){
-    this.name = name;
-    this.length = length;
-  }
+//Criação de um um objeto com as informações de nossos barcos -> (name, lenght)
+function Ship(name, length){
+  this.name = name;
+  this.length = length;
 }
 const destroyer =  new Ship('destroyer', 2);
 const submarine =  new Ship('submarine', 3);
 const cruiser =  new Ship('cruiser', 3);
 const battleShip =  new Ship('battleship', 4);
 const carrier =  new Ship('carrier', 5);
-
+//Array com nossos barcos
 const ships = [destroyer, submarine, cruiser, battleShip, carrier];
+console.log(ships)
+//Variavel notDrop utilizado na nossa function dragble
 let notDrop;
 
-//Função para  lidar como Handle de validação 
+/*Handle de validação que lida se o campo já está preenchido(class->taken) e retorna os indices a onde estão sendo inserido os barcos 
+Params -> BoardBlcoks -> blocos do usuario ou bot, 
+isHorizontal -> Boolean return, 
+|BlockIndex -> index aleatorio obtido pelo Math.random
+Ship -> o barco escolhido
+*/
+
 function isValid(boardBlocks, isHorizontal, blockIndex, ship){
-  /*validamos nosso valor inicial  , e atribuimos um calculo para ver se 
-  o campo tem espaço suficiente para ocupar os blocos da table*/ 
+  /*verificamos se o blockIndex que foi informado é valido para ser preenchido por um barco ,se ele for atribuimos esse valor ao validStartIndex
+  caso nao seja reposicionamos ele subtraindo o valor total das divs pelo lenght do barco escolhido 
+  a um handle que segue a mesma logica porém é realizado a mutiplicação para pegarmos o elemento na vertical caso isHorizontal retorne false
+  */ 
   let validStartIndex;
   if(isHorizontal ){
     if(blockIndex <= width * width - ship.length){
@@ -75,24 +90,22 @@ function isValid(boardBlocks, isHorizontal, blockIndex, ship){
     //Handle para os blocos em vertical
     if(blockIndex <= width * width - width * ship.length){
       validStartIndex = blockIndex;
+      console.log(validStartIndex)
     }else{
       validStartIndex = blockIndex - ship.length * width + width;
+      console.log(validStartIndex)
     }
   }
-
+  //Array responsavel por armazenar todos os espaços ocupados pelo nosso barco
   let shipBlocks = [];
-
+  //loop para inserir os barcos na nossa board
   for(let i = 0; i < ship.length; i++){
-    /*verificamos se é horizontal caso não seja pegamos nossa div aletoria e mutiplicamos por 10 
-    assim fazendo com que peguemos o espaço na vertical
-    */
     if(isHorizontal){
       shipBlocks.push(boardBlocks[Number(validStartIndex) + i])
     } else{
       shipBlocks.push(boardBlocks[Number(validStartIndex) + i * width])
     }
   } 
-
   //condição para que um barco não ocupe o espaço do outro caso o bloco tenha a class Taken adicionada pelo nosso looping
   const notTaken = shipBlocks.every(shipBlock => !shipBlock.classList.contains('taken'))
 
@@ -107,9 +120,10 @@ function addShipPiece(user, ship, blockId){
   let randomIndexBot = Math.floor(Math.random() * width * width);
  
   //teste aplicado para o player , para não utilizarmos o index aleatorio do bot
+  //BlockIndex -> div sorteada caso bot ,ou caso seja um player o blockId vai ter um valor passado no parametro da função, se não ele retorna o valaor aleatorio se estiver vazio o parametro
   let blockIndex = blockId ? blockId : randomIndexBot;
 
-//Faço uma desestruturação para utilizar as variaveis retornadas pela função de validação do nossos blocos  e se já foi ocupado
+//Faço uma desestruturação para utilizar as variaveis retornadas pela função de validação
  const {shipBlocks, notTaken} = isValid(boardBlocks, isHorizontal, blockIndex, ship)
 
   console.log(blockIndex);
@@ -129,8 +143,8 @@ function addShipPiece(user, ship, blockId){
   }
 }
 
-
   ships.forEach(ship => addShipPiece('bot',ship));
+
 
   //Posicionando nossos barcos na table
   /* Adicionamos um um evento para cada div nossa \
