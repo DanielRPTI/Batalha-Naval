@@ -10,12 +10,11 @@ const turnDisplay = document.getElementById('turn-display')
 /* - TurnShip() Função que vira os barcos.
 Variaveis:  
 - angle -> variavel recebendo nosso angulo padrão , para ser alterado caso o botão seja clicado 
-- ships -> dentro da variavel ships , estou recebendo todas as divs como um array array , para podermos
-iterar pelo nosso forEach.
+- ships -> dentro da variavel ships , estou recebendo todos os filhos da div optionContainer.
 */
 let angle = 0;
 function turnShip(){
-  //utilizei Array.from para colocar todos os filhos da div OptionContainer em um array
+  //utilizei Array.from para colocar todos os filhos da div OptionContainer fora de um HTMLCollection 
   const ships = Array.from(optionContainer.children)
   if(angle === 0){
     angle = 90;
@@ -28,10 +27,9 @@ function turnShip(){
     });
   }
   
-//Criando nossas grids, usando a logica de criar divs  de blocks separadamente 
-/*De largura 10x10, criei uma variavel global width pois irei utilizar ela diversas vezes para calculos , além de deixar o codigo mais 
-legivel
-
+//Criando nossas Tabelas
+/*De largura 10x10, criei uma variavel global width pois irei utilizar ela em outros lugares da lógica(não seria necessário,mas achei
+para uma boa visão do codigo).
 */
 const width = 10;
 function createTable(color, id){
@@ -39,6 +37,7 @@ function createTable(color, id){
   gameTableContainer.classList.add('game-table');
   gameTableContainer.style.backgroundColor = color;
   gameTableContainer.id = id;
+
   for (let i = 0; i < width * width; i++){
     const block = document.createElement('div');
     block.classList.add('block')
@@ -51,7 +50,7 @@ createTable('lightblue', 'player');
 createTable('yellow', 'bot');
 
 
-//Criação de um um objeto com as informações de nossos barcos -> (name, lenght)
+//Criação de uma Função construtora , para criarmos nossos barcos  com -> (name, lenght)
 function Ship(name, length){
   this.name = name;
   this.length = length;
@@ -61,24 +60,24 @@ const submarine =  new Ship('submarine', 3);
 const cruiser =  new Ship('cruiser', 3);
 const battleShip =  new Ship('battleship', 4);
 const carrier =  new Ship('carrier', 5);
-//Array com nossos barcos
+//Array  com nossos barcos 
 const ships = [destroyer, submarine, cruiser, battleShip, carrier];
 console.log(ships)
-//Variavel notDrop utilizado na nossa function dragble
+//Variavel notDrop utilizado na nossa function dragble Start e Drop para identificarmos se foi escolhido o campo
 let notDrop;
 
 /*Handle de validação que lida se o campo já está preenchido(class->taken) e retorna os indices a onde estão sendo inserido os barcos 
 Params -> BoardBlcoks -> blocos do usuario ou bot, 
 isHorizontal -> Boolean return, 
-|BlockIndex -> index aleatorio obtido pelo Math.random
+blockIndex -> index aleatorio obtido pelo Math.random
 Ship -> o barco escolhido
 */
-
-function isValid(boardBlocks, isHorizontal, blockIndex, ship){
-  /*verificamos se o blockIndex que foi informado é valido para ser preenchido por um barco ,se ele for atribuimos esse valor ao validStartIndex
+/*verificamos se o blockIndex que foi informado é valido para ser preenchido por um barco ,se ele for atribuimos esse valor ao validStartIndex
   caso nao seja reposicionamos ele subtraindo o valor total das divs pelo lenght do barco escolhido 
   a um handle que segue a mesma logica porém é realizado a mutiplicação para pegarmos o elemento na vertical caso isHorizontal retorne false
-  */ 
+*/ 
+function isValid(boardBlocks, isHorizontal, blockIndex, ship){
+
   let validStartIndex;
   if(isHorizontal ){
     if(blockIndex <= width * width - ship.length){
@@ -90,15 +89,15 @@ function isValid(boardBlocks, isHorizontal, blockIndex, ship){
     //Handle para os blocos em vertical
     if(blockIndex <= width * width - width * ship.length){
       validStartIndex = blockIndex;
-      console.log(validStartIndex)
     }else{
       validStartIndex = blockIndex - ship.length * width + width;
       console.log(validStartIndex)
     }
   }
+
   //Array responsavel por armazenar todos os espaços ocupados pelo nosso barco
   let shipBlocks = [];
-  //loop para inserir os barcos na nossa board
+  //loop para colocarmos os barcos na board na horizontal ou vertical
   for(let i = 0; i < ship.length; i++){
     if(isHorizontal){
       shipBlocks.push(boardBlocks[Number(validStartIndex) + i])
@@ -106,13 +105,33 @@ function isValid(boardBlocks, isHorizontal, blockIndex, ship){
       shipBlocks.push(boardBlocks[Number(validStartIndex) + i * width])
     }
   } 
-  //condição para que um barco não ocupe o espaço do outro caso o bloco tenha a class Taken adicionada pelo nosso looping
+
+  /*Condição para validarmos o limit da tabela 
+  no caso da horizontal se está no limite a direita da tabela 
+  já na vertical ele verifica o nosso limite inferior levando em conta a nossa altura
+  */
+  let valid; 
+  if(isHorizontal){
+    shipBlocks.every((_shipBlocks,index) => 
+      valid = shipBlocks[0].id % width !== width - (shipBlocks.length - (index - 1))
+    )
+  }else{
+    shipBlocks.every((_shipBlocks, index) => 
+    valid = shipBlocks[0].id < 90 + (width * index + 1)
+  )
+  }
+
+  //condição para verificarmos se o block não possui a class Taken 
   const notTaken = shipBlocks.every(shipBlock => !shipBlock.classList.contains('taken'))
 
-  return { shipBlocks, notTaken}
+  return { shipBlocks, notTaken, valid}
 }
 
-//Função usada para adicionar os barcos na table do bot de forma aléatoria na vertical e horizontal 
+/*Função usada para adicionar os barcos de acordo com a posição escolhida params -> 
+user -> bot ou player id
+ship ->  array com os barcos
+blockId -> no caso do player temos o id a onde o barco foi dropado
+*/
 function addShipPiece(user, ship, blockId){
   const boardBlocks = document.querySelectorAll(`#${user} div`);
   let randomBoolean = Math.random() < 0.5; //me retorna um true or false aleatoriamente
@@ -124,11 +143,11 @@ function addShipPiece(user, ship, blockId){
   let blockIndex = blockId ? blockId : randomIndexBot;
 
 //Faço uma desestruturação para utilizar as variaveis retornadas pela função de validação
- const {shipBlocks, notTaken} = isValid(boardBlocks, isHorizontal, blockIndex, ship)
+ const {shipBlocks, notTaken, valid} = isValid(boardBlocks, isHorizontal, blockIndex, ship)
 
   console.log(blockIndex);
 
-  if(notTaken){
+  if(notTaken && valid){
     shipBlocks.forEach(block => {
      block.classList.add(ship.name);
      block.classList.add('taken');
@@ -142,12 +161,11 @@ function addShipPiece(user, ship, blockId){
     }
   }
 }
-
+//Adicionando os barcos a tabela do Bot 
   ships.forEach(ship => addShipPiece('bot',ship));
 
-
-  //Posicionando nossos barcos na table
-  /* Adicionamos um um evento para cada div nossa \
+//Posicionando nossos barcos na table
+  /* Adicionamos um um evento para cada div nossa\
     - dragOver 
     - dragStart = pega nossa div usando o event.target  e setamos o valor de notDrop como false sendo padrão 
     - dropShipBlock = blockID -> pega a div em que lançamos o nosso barco, e nosso ship faz referencia ao id pego na função
@@ -163,7 +181,7 @@ function addShipPiece(user, ship, blockId){
     block.addEventListener('drop',dropShipBlock)
   })
 
-
+// pegamos a div filha que foi puxada e/ou arrastada. 
 function dragStart(event){
   notDrop = false;
   getShip = event.target;
@@ -178,7 +196,6 @@ function dragOver(event){
 }
 
 function dropShipBlock(event){
-  /*pegamos o id do bloco que iremos ocupar e depois pegamos o id do nosso barco*/
   const blockId = event.target.id;
   const ship = ships[getShip.id]
   console.log(blockId)
@@ -188,14 +205,13 @@ function dropShipBlock(event){
   }
 }
 
-//Add hover
-
+//Add hoverArea , função para executarmos aquela estilização sobre os campos que estamos escolhendo 
 function hoverArea(blockIndex, ship) {
   const allPlayerBlocks = document.querySelectorAll('#player div');
   let isHorizontal = angle === 0;
 
-  const {shipBlocks, notTaken} = isValid(allPlayerBlocks,isHorizontal, blockIndex, ship );
-  if(notTaken){
+  const {shipBlocks, notTaken, valid} = isValid(allPlayerBlocks,isHorizontal, blockIndex, ship );
+  if(notTaken && valid){
     shipBlocks.forEach(shipBlock => {
       shipBlock.classList.add('hover')
       setTimeout(() => shipBlock.classList.remove('hover'), 100)
@@ -203,10 +219,10 @@ function hoverArea(blockIndex, ship) {
   }
 }
 
+//-------------------------------Inicio do jogo------------------------------- 
 let gameOver = false; 
 let playerTurn;
 
-//Start Game 
 function startGame(){
   if(playerTurn === undefined){
     if(optionContainer.children.length != 0){
@@ -217,22 +233,26 @@ function startGame(){
         block.addEventListener('click', playersTry)
       })
       playerTurn = true;
-      turnDisplay.textContent = 'Your turn to Hit!';
+      turnDisplay.textContent = 'Your first time to try!';
       infoDisplay.textContent = 'The game has been started!'
     }
   }
 }
-
+//Players e bot info 
+//amarzena o nome do barco atigindo pelo player/bot em um array
 let playerHits  = [];
 let botHits  = [];
+//Array de barcos afundados 
 const playerSunkShips = [];
 const botSunkShips = []; 
+
+//Sistema de controle de tentativas
 
 function playersTry(event){
   if(!gameOver){
     if(event.target.classList.contains('taken')){
       event.target.classList.add('hit');
-      infoDisplay.textContent = 'You have been hit ship!';
+      infoDisplay.textContent = 'You hit ship!';
       let classes = Array.from(event.target.classList);
       classes = classes.filter(className => className !== 'block')
       classes = classes.filter(className => className !== 'hit')
@@ -258,18 +278,19 @@ function botGo(){
     infoDisplay.textContent = 'The bot is tring to find yours Ships';
 
     /*Setamos um timeout para o bot fazer uma busca aléatoria  por todas as divs do noss player, que contenham as 
-    classes taken mas não contenham a classe hit 
+    classes taken mas não contenham a classe hit , colocamos o timesout para realizar tambem uma busca dinamica
+    com um tempo para o bot 'pensar'
     */
     setTimeout(() => {
-      let randomGo = Math.floor(Math.random() * width * width);
+      let randomHit = Math.floor(Math.random() * width * width);
       const allBlocksPlayer = document.querySelectorAll('#player div');
-      if(allBlocksPlayer[randomGo].classList.contains('taken') && allBlocksPlayer[randomGo].classList.contains('hit')){
+      if(allBlocksPlayer[randomHit].classList.contains('taken') && allBlocksPlayer[randomHit].classList.contains('hit')){
        botGo();
        return
-     } else if(allBlocksPlayer[randomGo].classList.contains('taken') && !allBlocksPlayer[randomGo].classList.contains('hit')) {
-        allBlocksPlayer[randomGo].classList.add('hit');
+     } else if(allBlocksPlayer[randomHit].classList.contains('taken') && !allBlocksPlayer[randomHit].classList.contains('hit')) {
+        allBlocksPlayer[randomHit].classList.add('hit');
         infoDisplay.textContent = 'The bot hit you ship! Oh No...'
-        let classes = Array.from(allBlocksPlayer[randomGo].classList);
+        let classes = Array.from(allBlocksPlayer[randomHit].classList);
         classes = classes.filter(className => className !== 'block')
         classes = classes.filter(className => className !== 'hit')
         classes = classes.filter(className => className !== 'taken')
@@ -277,7 +298,7 @@ function botGo(){
         checkScore('bot', botHits, botSunkShips);  
     }else {
       infoDisplay.textContent = 'Bot hit anything this time'
-      allBlocksPlayer[randomGo].classList.add('fail-try')
+      allBlocksPlayer[randomHit].classList.add('fail-try')
     }
 
   }, 2000)
@@ -297,15 +318,16 @@ function botGo(){
 function checkScore(user , userHits, userSunkShips) {
     function checkShip(shipName, shipLenght){
       if(
-        userHits.filter(storedShipName => storedShipName  === shipName).length === shipLenght
+        //aqui arrShipName se refere aos conteudos que armazenamos no array de hits.
+        userHits.filter(arrShipName => arrShipName  === shipName).length === shipLenght
       ){
         if(user === 'player'){
           infoDisplay.textContent = `You sunk the  bot's ${shipName}`;
-          playerHits = userHits.filter(storedShipName => storedShipName !== shipName)
+          playerHits = userHits.filter(arrShipName => arrShipName !== shipName)
         }
         if(user === 'bot'){
           infoDisplay.textContent = `The bot sunk your  ${shipName}`;
-          playerHits = userHits.filter(storedShipName => storedShipName !== shipName)
+          playerHits = userHits.filter(arrShipName => arrShipName !== shipName)
         }
         userSunkShips.push(shipName)
       }

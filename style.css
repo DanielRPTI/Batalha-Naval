@@ -55,6 +55,7 @@ body{
   color: beige 50%;
 }
 
+/* Config style opções de barcos */
 .option-container {
   width: 500px;
   height: 60px;
@@ -71,7 +72,6 @@ body{
 .destroyer{
   background-color: brown;
 }
-
 .destroyer-preview{
   width: 20px;
   height: 10px;
@@ -81,7 +81,6 @@ body{
 .submarine{
   background-color: orange;
 }
-
 .submarine-preview{
   width: 30px;
   height: 10px;
@@ -120,6 +119,15 @@ body{
   background-color: grey;
 }
 
+/* Caso queira ver os barcos do bot remova o estilo abaixo */
+
+#bot .destroyer,
+#bot .battleship,
+#bot .submarine,
+#bot .cruiser,
+#bot .carrier{
+  background-color: yellow;
+}
 
 
 .hit {
@@ -129,4 +137,5 @@ body{
 .fail-try {
   background-color: grey !important;
 }
+
 
